@@ -1,0 +1,28 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.DS_Store
+
+# Data & artifacts
+data/players.parquet
+data/embeddings.npy
+data/player_index.json
+data/umap_coords.json
+model/checkpoints/
+search/faiss.index
+search/faiss_meta.json
+
+# Node
+client/node_modules/
+client/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Soccerdata cache
+soccerdata/
