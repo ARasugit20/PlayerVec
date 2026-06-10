@@ -1,0 +1,9 @@
+{
+  // Prevent Markdown Language Server spawn EBADF errors in this workspace.
+  // Markdown preview and editing still work; only LSP validation is disabled.
+  "markdown.validate.enabled": false,
+  "markdown.validate.referenceLinks.enabled": false,
+  "markdown.validate.fragmentLinks.enabled": false,
+  "markdown.validate.fileLinks.enabled": false,
+  "markdown.trace.server": "off"
+}

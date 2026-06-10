@@ -21,8 +21,10 @@ client/dist/
 
 # IDE
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 *.swp
+client/tsconfig.tsbuildinfo
 
 # Soccerdata cache
 soccerdata/
