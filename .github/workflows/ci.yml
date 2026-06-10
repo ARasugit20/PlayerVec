@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline (sample data)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -m data.scraper --source sample --sample-size 200
+          python -m model.train --epochs 30
+          python -m model.embed
+          python -m search.index
+          python -m search.umap_project
+          python -m model.evaluate
+
+      - name: API smoke test
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          uvicorn api.main:app --host 127.0.0.1 --port 8000 &
+          sleep 3
+          curl -sf "http://127.0.0.1:8000/health"
+          curl -sf "http://127.0.0.1:8000/players?q=Bellingham" | head -c 200
+          curl -sf "http://127.0.0.1:8000/similar?player=Jude%20Bellingham%200&k=3" | head -c 500
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install & build
+        working-directory: client
+        run: |
+          npm install
+          npm run build
