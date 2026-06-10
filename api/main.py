@@ -15,6 +15,8 @@ from pydantic import BaseModel
 
 from data.features import FEATURE_COLUMNS
 from search.query import PlayerSearch
+from team.diagnose import FixtureDiagnostician
+from team.fingerprint import TeamFingerprintEngine
 
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
@@ -46,6 +48,36 @@ class UMAPPoint(BaseModel):
     y: float
 
 
+class TeamFingerprintResponse(BaseModel):
+    team: str
+    squad_size: int
+    total_minutes: float
+    style_dna: dict[str, float]
+    archetype_mix: dict[str, float]
+    top_players: list[dict]
+
+
+class FixtureBriefResponse(BaseModel):
+    team_a: str
+    team_b: str
+    team_a_fingerprint: dict
+    team_b_fingerprint: dict
+    style_clashes: list[dict]
+    structural_gaps: list[dict]
+    exploit_vectors: list[str]
+    adjustments: list[dict]
+    wildcard_picks: list[dict]
+    summary: str
+
+
+class TournamentOutlookResponse(BaseModel):
+    team: str
+    fingerprint: dict
+    hardest_matchups: list[dict]
+    squad_redundancy: list[str]
+    outlook_summary: str
+
+
 app = FastAPI(title="PlayerVec API", version="1.0.0")
 
 app.add_middleware(
@@ -60,6 +92,16 @@ app.add_middleware(
 @lru_cache
 def get_search() -> PlayerSearch:
     return PlayerSearch()
+
+
+@lru_cache
+def get_fingerprint_engine() -> TeamFingerprintEngine:
+    return TeamFingerprintEngine()
+
+
+@lru_cache
+def get_diagnostician() -> FixtureDiagnostician:
+    return FixtureDiagnostician(get_fingerprint_engine())
 
 
 @lru_cache
@@ -122,3 +164,49 @@ def umap_coords() -> list[UMAPPoint]:
         raise HTTPException(status_code=503, detail="UMAP coordinates not generated yet")
     data = json.loads(path.read_text())
     return [UMAPPoint(**row) for row in data]
+
+
+@app.get("/teams")
+def list_teams(q: Optional[str] = Query(None, description="Filter by team name")) -> list[str]:
+    teams = get_fingerprint_engine().all_teams()
+    if q:
+        q_lower = q.lower()
+        teams = [t for t in teams if q_lower in t.lower()]
+    return teams
+
+
+@app.get("/team-fingerprint", response_model=TeamFingerprintResponse)
+def team_fingerprint(team: str = Query(..., description="Team name")) -> TeamFingerprintResponse:
+    try:
+        fp = get_fingerprint_engine().fingerprint(team)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return TeamFingerprintResponse(
+        team=fp.team,
+        squad_size=fp.squad_size,
+        total_minutes=fp.total_minutes,
+        style_dna=fp.style_dna,
+        archetype_mix=fp.archetype_mix,
+        top_players=fp.top_players,
+    )
+
+
+@app.get("/fixture-brief", response_model=FixtureBriefResponse)
+def fixture_brief(
+    team_a: str = Query(..., description="Your team"),
+    team_b: str = Query(..., description="Opponent"),
+) -> FixtureBriefResponse:
+    try:
+        brief = get_diagnostician().diagnose(team_a, team_b)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return FixtureBriefResponse(**brief.to_dict())
+
+
+@app.get("/tournament-outlook", response_model=TournamentOutlookResponse)
+def tournament_outlook(team: str = Query(..., description="Team name")) -> TournamentOutlookResponse:
+    try:
+        outlook = get_diagnostician().tournament_outlook(team)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return TournamentOutlookResponse(**outlook)
