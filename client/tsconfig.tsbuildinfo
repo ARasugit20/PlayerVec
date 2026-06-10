@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/api.ts","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/clustermap.tsx","./src/components/searchbar.tsx","./src/components/similarplayers.tsx"],"version":"5.9.3"}

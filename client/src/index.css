@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "DM Sans", system-ui, sans-serif;
+  background: #0a1f14;
+  color: #e8f5ec;
+  min-height: 100vh;
+}
