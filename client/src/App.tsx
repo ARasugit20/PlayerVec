@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchUMAP, searchSimilar } from "./api";
 import ClusterMap from "./components/ClusterMap";
+import FixtureBriefPanel from "./components/FixtureBrief";
 import SearchBar from "./components/SearchBar";
 import SimilarPlayers from "./components/SimilarPlayers";
 import type { SimilarPlayer, UMAPPoint } from "./types";
 
+type Tab = "players" | "fixture";
+
 export default function App() {
+  const [tab, setTab] = useState<Tab>("fixture");
   const [query, setQuery] = useState<string | null>(null);
   const [results, setResults] = useState<SimilarPlayer[]>([]);
   const [umapPoints, setUmapPoints] = useState<UMAPPoint[]>([]);
@@ -45,26 +49,54 @@ export default function App() {
             PlayerVec
           </p>
           <h1 className="mb-2 text-3xl font-bold text-white md:text-4xl">
-            World Cup Player Style Search
+            World Cup Matchup Diagnosis
           </h1>
           <p className="mb-6 max-w-2xl text-pitch-300/80">
-            A PyTorch autoencoder compresses ~30 stats into 32-dim embeddings. Find players with
-            similar styles — high-press midfielders, deep-lying playmakers, target strikers — without
-            position labels.
+            PlayerVec compresses ~30 stats into 32-dim embeddings, rolls them into team style DNA,
+            and diagnoses fixture gaps — structural mismatches, exploit vectors, and adjustment cards.
           </p>
-          <SearchBar onSearch={handleSearch} loading={loading} />
+          <div className="mb-6 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setTab("fixture")}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                tab === "fixture"
+                  ? "bg-pitch-500 text-white"
+                  : "bg-pitch-800 text-pitch-300 hover:bg-pitch-700"
+              }`}
+            >
+              Fixture Brief
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("players")}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                tab === "players"
+                  ? "bg-pitch-500 text-white"
+                  : "bg-pitch-800 text-pitch-300 hover:bg-pitch-700"
+              }`}
+            >
+              Player Search
+            </button>
+          </div>
+          {tab === "players" && <SearchBar onSearch={handleSearch} loading={loading} />}
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl space-y-10 px-4 py-10">
-        <SimilarPlayers query={query} results={results} loading={loading} error={error} />
-
-        <ClusterMap
-          points={umapPoints}
-          selectedPlayer={query}
-          onSelectPlayer={handleSearch}
-          highlightIds={highlightIds}
-        />
+        {tab === "fixture" ? (
+          <FixtureBriefPanel />
+        ) : (
+          <>
+            <SimilarPlayers query={query} results={results} loading={loading} error={error} />
+            <ClusterMap
+              points={umapPoints}
+              selectedPlayer={query}
+              onSelectPlayer={handleSearch}
+              highlightIds={highlightIds}
+            />
+          </>
+        )}
       </main>
 
       <footer className="border-t border-pitch-700/50 py-6 text-center text-sm text-pitch-300/40">
