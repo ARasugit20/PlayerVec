@@ -35,9 +35,12 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Toolti
   const p = payload[0].payload;
   return (
     <div className="rounded-lg border border-pitch-700 bg-pitch-900 px-3 py-2 text-sm shadow-lg">
-      <p className="font-medium text-white">{p.player}</p>
+      <p className="font-medium text-white">
+        {p.jersey_number != null && `#${p.jersey_number} `}
+        {p.player}
+      </p>
       <p className="text-pitch-300">
-        {p.team} · {p.position}
+        {p.nation} · {p.position_detail || p.position}
       </p>
     </div>
   );

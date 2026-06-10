@@ -71,9 +71,15 @@ export default function SimilarPlayers({ query, results, loading, error }: Props
           >
             <div className="mb-3 flex items-start justify-between gap-2">
               <div>
-                <h3 className="font-semibold text-white">{p.player}</h3>
+                <h3 className="font-semibold text-white">
+                  {p.jersey_number != null && (
+                    <span className="mr-2 text-pitch-500">#{p.jersey_number}</span>
+                  )}
+                  {p.player}
+                </h3>
                 <p className="text-sm text-pitch-300">
                   {p.team} · {p.nation}
+                  {p.position_detail ? ` · ${p.position_detail}` : ""}
                 </p>
               </div>
               <span

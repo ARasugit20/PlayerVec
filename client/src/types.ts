@@ -3,6 +3,8 @@ export interface SimilarPlayer {
   team: string;
   nation: string;
   position: string;
+  position_detail?: string | null;
+  jersey_number?: number | null;
   season: number;
   similarity: number;
   key_stats: Record<string, number>;
@@ -19,6 +21,8 @@ export interface UMAPPoint {
   team: string;
   nation: string;
   position: string;
+  position_detail?: string | null;
+  jersey_number?: number | null;
   season: number;
   x: number;
   y: number;
