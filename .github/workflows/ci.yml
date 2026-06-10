@@ -31,6 +31,7 @@ jobs:
           python -m search.index
           python -m search.umap_project
           python -m model.evaluate
+          python -m team.evaluate
 
       - name: API smoke test
         env:
@@ -41,6 +42,10 @@ jobs:
           curl -sf "http://127.0.0.1:8000/health"
           curl -sf "http://127.0.0.1:8000/players?q=Bellingham" | head -c 200
           curl -sf "http://127.0.0.1:8000/similar?player=Jude%20Bellingham%200&k=3" | head -c 500
+          curl -sf "http://127.0.0.1:8000/teams" | head -c 200
+          TEAM_A=$(curl -sf "http://127.0.0.1:8000/teams" | python -c "import sys,json; print(json.load(sys.stdin)[0])")
+          TEAM_B=$(curl -sf "http://127.0.0.1:8000/teams" | python -c "import sys,json; t=json.load(sys.stdin); print(t[1] if len(t)>1 else t[0])")
+          curl -sf "http://127.0.0.1:8000/fixture-brief?team_a=${TEAM_A}&team_b=${TEAM_B}" | head -c 800
 
   frontend:
     runs-on: ubuntu-latest

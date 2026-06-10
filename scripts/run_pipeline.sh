@@ -23,4 +23,7 @@ python -m search.umap_project
 echo "==> Running ablation study"
 python -m model.evaluate
 
+echo "==> Evaluating matchup diagnosis layer"
+python -m team.evaluate
+
 echo "==> Pipeline complete"

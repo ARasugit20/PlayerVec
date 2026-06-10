@@ -2,7 +2,7 @@
 
 ## Elevator pitch (30 seconds)
 
-PlayerVec is an unsupervised representation learning system that compresses World Cup player stats into 32-dimensional style embeddings using a PyTorch autoencoder. I built a full product on top: FAISS similarity search, a FastAPI backend, and a React UI with an interactive UMAP cluster map. The model never sees position labels during training, yet attackers, midfielders, and defenders self-organize in embedding space.
+PlayerVec is an unsupervised representation learning system that compresses World Cup player stats into 32-dimensional style embeddings, then rolls them into team style DNA for matchup diagnosis. I built a full product: FAISS player search, team fingerprinting, fixture briefs with gap analysis and adjustment cards, FastAPI backend, and React UI. The model never sees position labels during training, yet attackers, midfielders, and defenders self-organize — and team-level gaps surface as scouting hypotheses, not black-box predictions.
 
 ## Technical depth
 
@@ -27,16 +27,26 @@ PlayerVec is an unsupervised representation learning system that compresses Worl
 
 ### Product decisions
 
-- `/similar?player=X&k=5` — top-k cosine neighbors
-- `/umap` — 2D projection for the cluster map
-- Click a dot → search that player's style neighborhood
+- **Layer 1:** `/similar?player=X&k=5` — player style neighbors
+- **Layer 2:** `/team-fingerprint?team=` — minute-weighted squad style DNA
+- **Layer 3:** `/fixture-brief?team_a=&team_b=` — style clashes, structural gaps, adjustment cards
+- `/tournament-outlook?team=` — hardest stylistic matchups in bracket
+- `/umap` — 2D cluster map for player-level exploration
+
+### Matchup diagnosis (the differentiator)
+
+- Team fingerprints = minute-weighted embedding centroids + interpretable style dimensions (press, progression, aerial, finishing)
+- Archetype mix via KMeans on embeddings (high_presser, deep_progressor, finisher, etc.)
+- Fixture brief compares DNA, finds cosine-distance structural gaps, suggests wildcard lineup picks
+- **Honest framing:** scouting memo language, not "do X and you win" — outcome modeling is documented future work
 
 ## Questions I can answer well
 
-1. **How do you evaluate unsupervised embeddings?** Silhouette by position (proxy), reconstruction loss, qualitative neighbor inspection, ablation vs PCA.
+1. **How do you evaluate unsupervised embeddings?** Silhouette by position (proxy), reconstruction loss, ablation vs PCA, fingerprint sanity checks, matchup gap coverage rate.
 2. **Why not just use PCA?** Honest answer: PCA is a strong baseline on tabular data. The autoencoder wins when it captures nonlinear interactions (e.g., high pressures + high progressive passes = specific midfielder archetype).
-3. **How would you improve it?** Contrastive loss with match co-occurrence pairs, minutes-weighted training, season-aware normalization, position-agnostic style labels from scouting reports.
-4. **Deployment:** Docker Compose locally, Railway (API) + Vercel (frontend), GitHub Actions CI.
+3. **How do you evaluate matchup diagnosis without outcomes?** Structural gap rate across pairwise matchups, qualitative sanity (press/finishing variance across teams), explicit limits on tactical certainty.
+4. **How would you improve it?** Supervised outcome model on style-gap features + StatsBomb match results; contrastive loss with co-occurrence pairs; live re-embedding after each round.
+5. **Deployment:** Docker Compose locally, Railway (API) + Vercel (frontend), GitHub Actions CI.
 
 ## Metrics to cite
 

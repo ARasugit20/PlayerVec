@@ -36,3 +36,45 @@ python -m model.train --epochs 100
 python -m model.embed
 python -m model.evaluate
 ```
+
+## Matchup Diagnosis Layer
+
+Team fingerprints aggregate minute-weighted player embeddings into interpretable style DNA.
+Fixture briefs compare Team A vs Team B and surface structural gaps and adjustment cards.
+
+### Fingerprint Sanity Checks
+
+| Check | Result | Detail |
+|-------|--------|--------|
+| press_intensity_variance | PASS | Press DNA spread across teams: 1.603 |
+| finishing_variance | PASS | Finishing DNA spread across teams: 0.105 |
+| archetype_diversity | FAIL | Avg archetype pockets per squad: 1.0 |
+
+### Matchup Coverage
+
+- Teams analyzed: 12
+- Total pairwise matchups: 66
+- Matchups with structural gaps: 0 (0%)
+- Matchups with adjustment cards: 66
+
+### What we claim (and don't)
+
+| Claim | Supported? |
+|-------|------------|
+| "These teams play different styles" | Yes — style DNA + archetype mix |
+| "You're missing archetype Y" | Yes — structural gap on embeddings |
+| "Player Z is best stylistic counter" | Yes — wildcard picks via cosine distance |
+| "Do X tactic and you win" | No — needs match events + outcomes |
+| "Guaranteed tournament path" | No — too many confounders |
+
+### Future: Outcome Modeling (optional extension)
+
+- **Features:** style_gap_vector + archetype_mix_diff + home_away
+- **Target:** win_probability or xG_differential
+- **Data:** StatsBomb match results + lineups
+- **Approach:** Logistic regression baseline on historical matchups with similar style gaps
+
+```bash
+python -m team.evaluate
+python -m team.diagnose  # via API: GET /fixture-brief?team_a=&team_b=
+```

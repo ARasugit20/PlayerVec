@@ -1,11 +1,15 @@
 # PlayerVec
 
-A PyTorch autoencoder that compresses World Cup player stats into a 32-dim embedding space. Players with similar styles (high-press midfielders, deep-lying playmakers, target strikers) cluster together — without ever being told their position labels.
+A PyTorch autoencoder that compresses World Cup player stats into a 32-dim embedding space, then rolls them into **team style DNA** for **fixture matchup diagnosis**.
 
-Then a similarity search product on top: type in a player, get the 5 closest style-matches in the tournament.
+Three layers:
+1. **PlayerVec core** — player similarity + UMAP clusters (no position labels)
+2. **Team fingerprints** — minute-weighted squad style DNA (press, progression, aerial, finishing)
+3. **Fixture briefs** — style clashes, structural gaps, adjustment cards, wildcard picks
 
 ```
-FBref/StatsBomb → scraper → autoencoder → FAISS → FastAPI → React UI + UMAP map
+FBref/StatsBomb → scraper → autoencoder → embeddings
+  → FAISS (player search) + team fingerprints → fixture diagnosis → FastAPI → React UI
 ```
 
 ## Quick start
@@ -66,6 +70,10 @@ docker compose up --build
 | `GET /players?q=Bell` | Autocomplete player names |
 | `GET /similar?player=Erling+Haaland&k=5` | Top-k style matches |
 | `GET /umap` | 2D UMAP coordinates for cluster map |
+| `GET /teams` | List squads |
+| `GET /team-fingerprint?team=Brazil` | Squad style DNA + archetype mix |
+| `GET /fixture-brief?team_a=Brazil&team_b=France` | Matchup diagnosis report |
+| `GET /tournament-outlook?team=Brazil` | Hardest stylistic matchups |
 
 ## Project structure
 
@@ -74,6 +82,7 @@ playervec/
 ├── data/           # scraper, features, parquet, embeddings
 ├── model/          # autoencoder, train, evaluate, embed
 ├── search/         # FAISS index, query, UMAP
+├── team/           # fingerprints, fixture diagnosis, evaluation
 ├── api/            # FastAPI routes
 ├── client/         # React + Vite + Tailwind
 ├── docs/           # RESEARCH.md, INTERVIEW.md
