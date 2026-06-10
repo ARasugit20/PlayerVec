@@ -27,6 +27,8 @@ class SimilarPlayer(BaseModel):
     team: str
     nation: str
     position: str
+    position_detail: Optional[str] = None
+    jersey_number: Optional[int] = None
     season: int
     similarity: float
     key_stats: dict[str, float]
@@ -43,6 +45,8 @@ class UMAPPoint(BaseModel):
     team: str
     nation: str
     position: str
+    position_detail: Optional[str] = None
+    jersey_number: Optional[int] = None
     season: int
     x: float
     y: float
@@ -149,6 +153,8 @@ def similar(
                 team=row["team"],
                 nation=row["nation"],
                 position=row["position"],
+                position_detail=row.get("position_detail"),
+                jersey_number=row.get("jersey_number"),
                 season=row["season"],
                 similarity=row["similarity"],
                 key_stats=stats_lookup.get(row["player"], {}),

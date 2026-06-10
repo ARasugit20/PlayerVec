@@ -47,10 +47,16 @@ def embed_players(
 
     embeddings = embeddings / (np.linalg.norm(embeddings, axis=1, keepdims=True) + 1e-8)
 
-    meta = df[["player", "team", "nation", "position", "season", "source"]].to_dict("records")
+    meta_cols = ["player", "team", "nation", "position", "position_detail", "jersey_number", "season", "source"]
+    meta_cols = [c for c in meta_cols if c in df.columns]
+    meta = df[meta_cols].to_dict("records")
     for i, row in enumerate(meta):
         row["id"] = i
         row["minutes_played"] = float(df.iloc[i]["minutes_played"])
+        if "jersey_number" in row and pd.notna(row["jersey_number"]):
+            row["jersey_number"] = int(row["jersey_number"])
+        else:
+            row["jersey_number"] = None
 
     output_embeddings.parent.mkdir(parents=True, exist_ok=True)
     np.save(output_embeddings, embeddings)

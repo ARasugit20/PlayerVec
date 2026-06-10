@@ -42,7 +42,10 @@ class PlayerRecord:
     id: int
     player: str
     team: str
+    nation: str
     position: str
+    position_detail: str
+    jersey_number: int | None
     minutes: float
     embedding: np.ndarray
     stats: dict[str, float]
@@ -91,12 +94,16 @@ class TeamFingerprintEngine:
         records = []
         for i, row in self.df.iterrows():
             meta = self.meta[i] if i < len(self.meta) else {}
+            jersey = row.get("jersey_number")
             records.append(
                 PlayerRecord(
                     id=int(meta.get("id", i)),
                     player=str(row["player"]),
                     team=str(row["team"]),
+                    nation=str(row.get("nation", "")),
                     position=str(row["position"]),
+                    position_detail=str(row.get("position_detail", "")),
+                    jersey_number=int(jersey) if pd.notna(jersey) else None,
                     minutes=float(row["minutes_played"]),
                     embedding=self.embeddings[i],
                     stats={col: float(row[col]) for col in FEATURE_COLUMNS},
@@ -205,7 +212,10 @@ class TeamFingerprintEngine:
             top_players=[
                 {
                     "player": p.player,
+                    "nation": p.nation,
+                    "jersey_number": p.jersey_number,
                     "position": p.position,
+                    "position_detail": p.position_detail,
                     "minutes": p.minutes,
                     "archetype": p.archetype,
                 }
