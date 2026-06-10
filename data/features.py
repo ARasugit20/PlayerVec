@@ -40,6 +40,8 @@ METADATA_COLUMNS = [
     "team",
     "nation",
     "position",
+    "position_detail",
+    "jersey_number",
     "season",
     "source",
     "minutes_played",

@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-SOURCE="${1:-sample}"
+SOURCE="${1:-worldcup}"
 
 echo "==> Scraping data (source=$SOURCE)"
 python -m data.scraper --source "$SOURCE"
