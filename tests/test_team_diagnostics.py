@@ -1,9 +1,13 @@
 """Tests for team diagnostics logic."""
 
-import pytest
-from unittest.mock import Mock, MagicMock, patch
-from team.diagnose import StyleGap, StructuralGap, AdjustmentCard, WildcardPick, FixtureBrief
-from team.fingerprint import TeamFingerprint, PlayerRecord
+from team.diagnose import (
+    AdjustmentCard,
+    FixtureBrief,
+    StructuralGap,
+    StyleGap,
+    WildcardPick,
+)
+from team.fingerprint import PlayerRecord, TeamFingerprint
 
 
 class TestStyleGap:
@@ -172,7 +176,7 @@ class TestTeamFingerprint:
             top_players=[],
         )
         for dimension, value in fp.style_dna.items():
-            assert isinstance(value, (int, float))
+            assert isinstance(value, int | float)
             assert 0 <= value <= 10
 
     def test_fingerprint_to_dict(self):

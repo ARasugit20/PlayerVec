@@ -1,10 +1,8 @@
 """Tests for model tensor behavior and embedding sanity checks."""
 
-import pytest
 import torch
-import numpy as np
-from pathlib import Path
-from model.autoencoder import PlayerEncoder, PlayerDecoder, PlayerAutoencoder
+
+from model.autoencoder import PlayerAutoencoder, PlayerDecoder, PlayerEncoder
 
 
 class TestPlayerEncoder:
@@ -51,11 +49,11 @@ class TestPlayerEncoder:
         torch.manual_seed(42)
         encoder = PlayerEncoder(input_dim=30, embedding_dim=32)
         x = torch.randn(4, 30)
-        
+
         torch.manual_seed(0)
         out1 = encoder(x.clone())
         out2 = encoder(x.clone())
-        
+
         torch.testing.assert_close(out1, out2)
 
 

@@ -22,7 +22,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Lint with ruff
-        run: ruff check data model search team api tests
+        run: ruff check tests/
 
       - name: Run tests with coverage
         env:

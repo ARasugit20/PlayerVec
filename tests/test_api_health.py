@@ -1,8 +1,10 @@
 """Tests for API health and basic endpoint smoke tests."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch, MagicMock
+
 from api.main import app
 
 
@@ -37,7 +39,7 @@ class TestPlayersEndpoint:
         mock_search = MagicMock()
         mock_search.all_players.return_value = ["Haaland", "Kane", "Lewandowski"]
         mock_get_search.return_value = mock_search
-        
+
         response = client.get("/players")
         assert response.status_code == 200
         data = response.json()
@@ -49,7 +51,7 @@ class TestPlayersEndpoint:
         mock_search = MagicMock()
         mock_search.all_players.return_value = []
         mock_get_search.return_value = mock_search
-        
+
         response = client.get("/players")
         assert response.status_code == 200
         data = response.json()
@@ -61,7 +63,7 @@ class TestPlayersEndpoint:
         mock_search = MagicMock()
         mock_search.all_players.return_value = ["Haaland", "Kane"]
         mock_get_search.return_value = mock_search
-        
+
         response = client.get("/players?q=Haal")
         assert response.status_code == 200
         data = response.json()
@@ -74,7 +76,7 @@ class TestPlayersEndpoint:
         many_players = [f"Player{i}" for i in range(100)]
         mock_search.all_players.return_value = many_players
         mock_get_search.return_value = mock_search
-        
+
         response = client.get("/players")
         data = response.json()
         assert len(data) <= 50
@@ -102,7 +104,7 @@ class TestSimilarPlayersEndpoint:
         ]
         mock_get_search.return_value = mock_search
         mock_stats.return_value = {}
-        
+
         response = client.get("/similar?player=Haaland&k=5")
         assert response.status_code == 200
         data = response.json()
@@ -116,7 +118,7 @@ class TestSimilarPlayersEndpoint:
         mock_search = MagicMock()
         mock_search.similar.side_effect = KeyError("Player not found")
         mock_get_search.return_value = mock_search
-        
+
         response = client.get("/similar?player=NonexistentPlayer&k=5")
         assert response.status_code == 404
 
@@ -140,8 +142,8 @@ class TestSimilarPlayersEndpoint:
         ]
         mock_get_search.return_value = mock_search
         mock_stats.return_value = {}
-        
-        response = client.get("/similar?player=Haaland&k=3")
+
+        client.get("/similar?player=Haaland&k=3")
         mock_search.similar.assert_called_with("Haaland", k=3)
 
 
@@ -154,7 +156,7 @@ class TestTeamsEndpoint:
         mock_fp = MagicMock()
         mock_fp.all_teams.return_value = ["Brazil", "France", "Germany"]
         mock_get_fp.return_value = mock_fp
-        
+
         response = client.get("/teams")
         assert response.status_code == 200
         data = response.json()
@@ -166,7 +168,7 @@ class TestTeamsEndpoint:
         mock_fp = MagicMock()
         mock_fp.all_teams.return_value = ["Brazil", "France"]
         mock_get_fp.return_value = mock_fp
-        
+
         response = client.get("/teams?q=Fra")
         assert response.status_code == 200
         data = response.json()
@@ -186,11 +188,11 @@ class TestTeamFingerprintEndpoint:
         mock_fp_obj.style_dna = {"press": 6.5, "progression": 7.0}
         mock_fp_obj.archetype_mix = {"finisher": 0.4}
         mock_fp_obj.top_players = [{"player": "Neymar"}]
-        
+
         mock_fp = MagicMock()
         mock_fp.fingerprint.return_value = mock_fp_obj
         mock_get_fp.return_value = mock_fp
-        
+
         response = client.get("/team-fingerprint?team=Brazil")
         assert response.status_code == 200
         data = response.json()
@@ -202,7 +204,7 @@ class TestTeamFingerprintEndpoint:
         mock_fp = MagicMock()
         mock_fp.fingerprint.side_effect = KeyError("Team not found")
         mock_get_fp.return_value = mock_fp
-        
+
         response = client.get("/team-fingerprint?team=NonexistentTeam")
         assert response.status_code == 404
 
@@ -226,11 +228,11 @@ class TestFixtureBriefEndpoint:
             "wildcard_picks": [],
             "summary": "Even match",
         }
-        
+
         mock_diag = MagicMock()
         mock_diag.diagnose.return_value = mock_brief
         mock_get_diag.return_value = mock_diag
-        
+
         response = client.get("/fixture-brief?team_a=France&team_b=Germany")
         assert response.status_code == 200
         data = response.json()
@@ -242,6 +244,6 @@ class TestFixtureBriefEndpoint:
         mock_diag = MagicMock()
         mock_diag.diagnose.side_effect = KeyError("Team not found")
         mock_get_diag.return_value = mock_diag
-        
+
         response = client.get("/fixture-brief?team_a=Unknown&team_b=Germany")
         assert response.status_code == 404

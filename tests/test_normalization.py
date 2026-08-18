@@ -1,9 +1,9 @@
 """Tests for data normalization and transformation logic."""
 
-import pytest
 import pandas as pd
-from data.roster import normalize_name, normalize_team, _primary_position
-from data.scraper import _per90, _safe_numeric, _flatten_columns
+
+from data.roster import _primary_position, normalize_name, normalize_team
+from data.scraper import _flatten_columns, _per90, _safe_numeric
 
 
 class TestNameNormalization:

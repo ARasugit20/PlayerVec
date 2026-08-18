@@ -35,3 +35,6 @@ ignore = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["data", "model", "search", "team", "api"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "F401", "ANN"]

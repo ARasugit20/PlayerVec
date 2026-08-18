@@ -1,16 +1,14 @@
 """Tests for search resolution with controlled fixtures."""
 
-import pytest
-import json
 import numpy as np
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from search.query import PlayerSearch
+import pytest
+
+from search.query import PlayerSearch  # noqa: F401
 
 
 class MockPlayerSearch:
     """Mock player search with controlled fixture data."""
-    
+
     def __init__(self):
         """Initialize mock search with sample data."""
         self.players = {
@@ -36,15 +34,15 @@ class MockPlayerSearch:
                 "season": 2022,
             },
         }
-    
+
     def similar(self, player_name: str, k: int = 5):
         """Return k most similar players."""
         if player_name not in self.players:
             raise KeyError(f"Player {player_name} not found")
-        
+
         query_embedding = self.players[player_name]["embedding"]
         results = []
-        
+
         for name, data in self.players.items():
             if name == player_name:
                 continue
@@ -57,10 +55,10 @@ class MockPlayerSearch:
                 "season": data["season"],
                 "similarity": 1.0 / (1.0 + distance),
             })
-        
+
         results.sort(key=lambda x: x["similarity"], reverse=True)
         return results[:k]
-    
+
     def all_players(self):
         """Return all player names."""
         return list(self.players.keys())
