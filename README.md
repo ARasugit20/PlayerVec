@@ -100,7 +100,7 @@ playervec/
 
 | Source | Use |
 |--------|-----|
-| `soccerdata` / FBref | Live 2026 World Cup stats |
+| `soccerdata` / FBref | Integration available; currently offline sample mode |
 | StatsBomb open data | Historical 2014–2022 training |
 | `--source sample` | Offline synthetic data for dev/CI |
 
