@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "playervec"
+version = "1.0.0"
+description = "World Cup player embeddings and matchup diagnosis"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov=data --cov=model --cov=search --cov=team --cov=api --cov-report=xml --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["data", "model", "search", "team", "api"]
+omit = ["*/__init__.py", "*/tests/*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W", "C90", "I", "N",
+    "UP", "ANN", "ASYNC", "S",
+]
+ignore = [
+    "ANN001", "ANN002", "ANN003",
+    "ANN101", "ANN102", "ANN401",
+    "S101",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["data", "model", "search", "team", "api"]
