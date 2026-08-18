@@ -1,5 +1,8 @@
 # PlayerVec
 
+[![CI](https://github.com/ARasugit20/PlayerVec/actions/workflows/ci.yml/badge.svg)](https://github.com/ARasugit20/PlayerVec/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/ARasugit20/PlayerVec/graph/badge.svg)](https://codecov.io/gh/ARasugit20/PlayerVec)
+
 A PyTorch autoencoder that compresses World Cup player stats into a 32-dim embedding space, then rolls them into **team style DNA** for **fixture matchup diagnosis**.
 
 Three layers:
