@@ -3,8 +3,6 @@
 import numpy as np
 import pytest
 
-from search.query import PlayerSearch  # noqa: F401
-
 
 class MockPlayerSearch:
     """Mock player search with controlled fixture data."""
