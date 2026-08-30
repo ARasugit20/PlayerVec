@@ -44,7 +44,7 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
-      - name: Run pipeline (sample data)
+      - name: Run pipeline (sample data for CI speed)
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
@@ -63,8 +63,9 @@ jobs:
           uvicorn api.main:app --host 127.0.0.1 --port 8000 &
           sleep 3
           curl -sf "http://127.0.0.1:8000/health"
-          curl -sf "http://127.0.0.1:8000/players?q=Bellingham" | head -c 200
-          curl -sf "http://127.0.0.1:8000/similar?player=Jude%20Bellingham%200&k=3" | head -c 500
+          PLAYER=$(curl -sf "http://127.0.0.1:8000/players" | python -c "import sys,json; print(json.load(sys.stdin)[0])")
+          curl -sf "http://127.0.0.1:8000/players?q=Bell" | head -c 200
+          curl -sf "http://127.0.0.1:8000/similar?player=$(python -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$PLAYER")&k=3" | head -c 500
           curl -sf "http://127.0.0.1:8000/teams" | head -c 200
           TEAM_A=$(curl -sf "http://127.0.0.1:8000/teams" | python -c "import sys,json; print(json.load(sys.stdin)[0])")
           TEAM_B=$(curl -sf "http://127.0.0.1:8000/teams" | python -c "import sys,json; t=json.load(sys.stdin); print(t[1] if len(t)>1 else t[0])")

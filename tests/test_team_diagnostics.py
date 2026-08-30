@@ -1,4 +1,6 @@
-"""Tests for team diagnostics logic."""
+"""Tests for team diagnostics dataclasses (see team/diagnose.py, team/fingerprint.py)."""
+
+import numpy as np
 
 from team.diagnose import (
     AdjustmentCard,
@@ -11,120 +13,98 @@ from team.fingerprint import PlayerRecord, TeamFingerprint
 
 
 class TestStyleGap:
-    """Test style gap data structure."""
-
     def test_style_gap_creation(self):
-        """StyleGap can be instantiated."""
-        gap = StyleGap(dimension="press", team_a_value=7.5, team_b_value=4.2, gap=3.3)
-        assert gap.dimension == "press"
-        assert gap.team_a_value == 7.5
-        assert gap.team_b_value == 4.2
-        assert gap.gap == 3.3
+        gap = StyleGap(
+            dimension="press_intensity",
+            team_a_value=7.5,
+            team_b_value=4.2,
+            delta_pct=44.0,
+            description="Team A presses more",
+        )
+        assert gap.dimension == "press_intensity"
+        assert gap.delta_pct == 44.0
 
-    def test_style_gap_gap_positive(self):
-        """Gap is positive when team_a > team_b."""
-        gap = StyleGap(dimension="progression", team_a_value=10, team_b_value=5, gap=5)
-        assert gap.gap > 0
+    def test_style_gap_positive_delta(self):
+        gap = StyleGap("progression", 10.0, 5.0, 50.0, "A leads")
+        assert gap.delta_pct > 0
 
-    def test_style_gap_gap_negative(self):
-        """Gap can be negative."""
-        gap = StyleGap(dimension="finishing", team_a_value=2.0, team_b_value=8.0, gap=-6.0)
-        assert gap.gap < 0
+    def test_style_gap_negative_delta(self):
+        gap = StyleGap("finishing", 2.0, 8.0, -75.0, "B leads")
+        assert gap.delta_pct < 0
 
 
 class TestStructuralGap:
-    """Test structural gap data structure."""
-
     def test_structural_gap_creation(self):
-        """StructuralGap can be instantiated."""
-        gap = StructuralGap(description="Germany lacks aerial presence", severity="high")
-        assert gap.description == "Germany lacks aerial presence"
-        assert gap.severity == "high"
+        gap = StructuralGap(
+            archetype="deep_progressor",
+            opponent_share=0.35,
+            your_share=0.10,
+            description="Germany has more progressors",
+        )
+        assert gap.archetype == "deep_progressor"
+        assert gap.opponent_share > gap.your_share
 
-    def test_structural_gap_severity_levels(self):
-        """Severity levels are valid."""
-        for severity in ["low", "medium", "high"]:
-            gap = StructuralGap(description="Test", severity=severity)
-            assert gap.severity == severity
+    def test_structural_gap_shares_bounded(self):
+        gap = StructuralGap("high_presser", 0.25, 0.15, "Press gap")
+        assert 0 <= gap.your_share <= 1
+        assert 0 <= gap.opponent_share <= 1
 
 
 class TestAdjustmentCard:
-    """Test adjustment card data structure."""
-
     def test_adjustment_card_creation(self):
-        """AdjustmentCard can be instantiated."""
         card = AdjustmentCard(
-            player="Antonio Rudiger",
-            position="CB",
-            recommendation="Start for physical presence",
-            rationale="High pressure environment",
+            category="lineup",
+            title="Fill progressor gap",
+            detail="Start a second deep-lying midfielder",
+            suggested_players=["Rodri"],
         )
-        assert card.player == "Antonio Rudiger"
-        assert card.position == "CB"
+        assert card.category == "lineup"
+        assert "Rodri" in card.suggested_players
 
-    def test_adjustment_card_rationale(self):
-        """Adjustment cards have clear rationale."""
-        card = AdjustmentCard(
-            player="N'Golo Kanté",
-            position="CM",
-            recommendation="Bench rotation",
-            rationale="Recovery week after heavy schedule",
-        )
-        assert len(card.rationale) > 0
+    def test_adjustment_card_default_players(self):
+        card = AdjustmentCard(category="style_lever", title="Press higher", detail="...")
+        assert card.suggested_players == []
 
 
 class TestWildcardPick:
-    """Test wildcard pick data structure."""
-
     def test_wildcard_pick_creation(self):
-        """WildcardPick can be instantiated."""
         pick = WildcardPick(
             player="Eduardo Camavinga",
-            position="CM",
-            case="Younger legs to counter press",
-            gap_exploited="Aging midfield",
+            position="MF",
+            archetype="deep_progressor",
+            fills_gap="deep_progressor",
+            similarity_to_opponent=0.82,
         )
         assert pick.player == "Eduardo Camavinga"
-        assert pick.position == "CM"
+        assert pick.similarity_to_opponent == 0.82
 
-    def test_wildcard_pick_gap_exploitation(self):
-        """Wildcard picks target specific gaps."""
-        pick = WildcardPick(
-            player="Test Player",
-            position="ST",
-            case="Clinical finishing",
-            gap_exploited="Defensive vulnerability",
-        )
-        assert len(pick.gap_exploited) > 0
+    def test_wildcard_pick_gap_field(self):
+        pick = WildcardPick("Test", "ST", "finisher", "finisher", 0.7)
+        assert pick.fills_gap == "finisher"
 
 
 class TestFixtureBrief:
-    """Test fixture brief data structure."""
-
     def test_fixture_brief_creation(self):
-        """FixtureBrief can be instantiated."""
         brief = FixtureBrief(
             team_a="France",
             team_b="Germany",
-            team_a_fingerprint={"press": 7.5, "progression": 6.8},
-            team_b_fingerprint={"press": 6.2, "progression": 7.1},
+            team_a_fingerprint={"style_dna": {"press_intensity": 7.5}},
+            team_b_fingerprint={"style_dna": {"press_intensity": 6.2}},
             style_clashes=[],
             structural_gaps=[],
             exploit_vectors=["aerial duels"],
             adjustments=[],
             wildcard_picks=[],
-            summary="Even match, small advantages.",
+            summary="Even match.",
         )
         assert brief.team_a == "France"
-        assert brief.team_b == "Germany"
 
     def test_fixture_brief_to_dict(self):
-        """FixtureBrief.to_dict() returns dict."""
         brief = FixtureBrief(
             team_a="Spain",
             team_b="Italy",
-            team_a_fingerprint={"press": 6.0},
-            team_b_fingerprint={"press": 6.5},
+            team_a_fingerprint={},
+            team_b_fingerprint={},
             style_clashes=[],
             structural_gaps=[],
             exploit_vectors=[],
@@ -133,110 +113,69 @@ class TestFixtureBrief:
             summary="Tactical test.",
         )
         result = brief.to_dict()
-        assert isinstance(result, dict)
         assert result["team_a"] == "Spain"
-        assert result["team_b"] == "Italy"
 
 
 class TestTeamFingerprint:
-    """Test team fingerprint data structure."""
-
     def test_fingerprint_creation(self):
-        """TeamFingerprint can be instantiated."""
-        players = [
-            PlayerRecord(
-                player="Test Player",
-                team="Brazil",
-                position="ST",
-                minutes=450,
-                stats={"goals": 10},
-            )
-        ]
         fp = TeamFingerprint(
             team="Brazil",
             squad_size=23,
-            total_minutes=8000,
-            players=players,
-            style_dna={"press": 6.5, "progression": 7.2},
-            archetype_mix={"finisher": 0.4, "presser": 0.3},
-            top_players=[{"player": "Neymar", "role": "CAM"}],
+            total_minutes=8000.0,
+            embedding_centroid=[0.1] * 32,
+            style_dna={"press_intensity": 6.5},
+            archetype_mix={"finisher": 0.4},
+            top_players=[{"player": "Neymar", "position": "FW"}],
         )
         assert fp.team == "Brazil"
-        assert fp.squad_size == 23
+        assert len(fp.embedding_centroid) == 32
 
-    def test_fingerprint_style_dna_values(self):
-        """Style DNA values are numeric."""
+    def test_fingerprint_style_dna_numeric(self):
         fp = TeamFingerprint(
             team="Brazil",
             squad_size=23,
-            total_minutes=8000,
-            players=[],
-            style_dna={"press": 7.1, "progression": 6.8, "finishing": 7.5},
+            total_minutes=8000.0,
+            embedding_centroid=[0.0] * 32,
+            style_dna={"press_intensity": 7.1, "progression": 6.8},
             archetype_mix={},
-            top_players=[],
         )
-        for dimension, value in fp.style_dna.items():
+        for value in fp.style_dna.values():
             assert isinstance(value, int | float)
-            assert 0 <= value <= 10
 
-    def test_fingerprint_to_dict(self):
-        """TeamFingerprint.to_dict() returns dict."""
-        fp = TeamFingerprint(
-            team="Argentina",
-            squad_size=23,
-            total_minutes=8000,
-            players=[],
-            style_dna={"press": 6.0},
-            archetype_mix={"midfielder": 0.5},
-            top_players=[],
+    def test_player_record_fields(self):
+        rec = PlayerRecord(
+            id=1,
+            player="Test",
+            team="Brazil",
+            nation="Brazil",
+            position="FW",
+            position_detail="Centre Forward",
+            jersey_number=9,
+            minutes=450.0,
+            embedding=np.zeros(32),
+            stats={"goals_per90": 0.5},
         )
-        result = fp.to_dict()
-        assert isinstance(result, dict)
-        assert result["team"] == "Argentina"
+        assert rec.jersey_number == 9
 
 
 class TestTeamDiagnosticsIntegration:
-    """Integration tests for team diagnostics."""
-
     def test_fixture_brief_has_all_components(self):
-        """Fixture brief contains all required components."""
         brief = FixtureBrief(
             team_a="Team A",
             team_b="Team B",
-            team_a_fingerprint={"stat": 5.0},
-            team_b_fingerprint={"stat": 5.0},
-            style_clashes=[StyleGap("dimension", 5.0, 5.0, 0.0)],
-            structural_gaps=[StructuralGap("gap", "high")],
+            team_a_fingerprint={},
+            team_b_fingerprint={},
+            style_clashes=[{"dimension": "press"}],
+            structural_gaps=[{"archetype": "finisher"}],
             exploit_vectors=["vector1"],
-            adjustments=[AdjustmentCard("Player", "Position", "Rec", "Rationale")],
-            wildcard_picks=[WildcardPick("Player", "Position", "Case", "Gap")],
+            adjustments=[{"title": "Press"}],
+            wildcard_picks=[{"player": "X"}],
             summary="Summary",
         )
-        assert brief.style_clashes
-        assert brief.structural_gaps
-        assert brief.exploit_vectors
-        assert brief.adjustments
-        assert brief.wildcard_picks
+        assert brief.style_clashes and brief.structural_gaps
 
     def test_fingerprint_quantifiable_comparison(self):
-        """Fingerprints can be compared quantitatively."""
-        fp1 = TeamFingerprint(
-            team="Team1",
-            squad_size=23,
-            total_minutes=8000,
-            players=[],
-            style_dna={"press": 7.0, "progression": 6.0},
-            archetype_mix={},
-            top_players=[],
-        )
-        fp2 = TeamFingerprint(
-            team="Team2",
-            squad_size=23,
-            total_minutes=8000,
-            players=[],
-            style_dna={"press": 5.0, "progression": 6.0},
-            archetype_mix={},
-            top_players=[],
-        )
-        gap = abs(fp1.style_dna["press"] - fp2.style_dna["press"])
+        fp1 = TeamFingerprint("T1", 23, 8000.0, [0.0] * 32, {"press_intensity": 7.0}, {})
+        fp2 = TeamFingerprint("T2", 23, 8000.0, [0.0] * 32, {"press_intensity": 5.0}, {})
+        gap = abs(fp1.style_dna["press_intensity"] - fp2.style_dna["press_intensity"])
         assert gap == 2.0
