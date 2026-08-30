@@ -1,5 +1,8 @@
 # PlayerVec
 
+[![CI](https://github.com/ARasugit20/PlayerVec/actions/workflows/ci.yml/badge.svg)](https://github.com/ARasugit20/PlayerVec/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/ARasugit20/PlayerVec/graph/badge.svg)](https://codecov.io/gh/ARasugit20/PlayerVec)
+
 A PyTorch autoencoder that compresses World Cup player stats into a 32-dim embedding space, then rolls them into **team style DNA** for **fixture matchup diagnosis**.
 
 Three layers:
@@ -27,16 +30,11 @@ pip install -r requirements.txt
 
 export PYTHONPATH=.
 
-# Offline demo (synthetic World Cup data)
-bash scripts/run_pipeline.sh sample
+# Real World Cup data (FBref stats + StatsBomb roster metadata)
+bash scripts/run_pipeline.sh
 
-# Or live FBref data (requires network)
-python -m data.scraper --source fbref --seasons 2022
-python -m model.train --epochs 100
-python -m model.embed
-python -m search.index
-python -m search.umap_project
-python -m model.evaluate
+# Or synthetic sample data (CI only)
+bash scripts/run_pipeline.sh sample
 ```
 
 ### 2. Start API
@@ -100,9 +98,10 @@ playervec/
 
 | Source | Use |
 |--------|-----|
-| `soccerdata` / FBref | Live 2026 World Cup stats |
-| StatsBomb open data | Historical 2014–2022 training |
-| `--source sample` | Offline synthetic data for dev/CI |
+| `worldcup` (default) | FBref per-90 stats + StatsBomb jersey/nation/position |
+| `statsbomb` | Event-aggregated stats from StatsBomb open data |
+| `fbref` via soccerdata | FBref only; needs Chrome/Selenium |
+| `--source sample` | Synthetic data for CI only |
 
 ## Research
 

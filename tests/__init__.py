@@ -1,0 +1,1 @@
+"""PlayerVec test suite."""

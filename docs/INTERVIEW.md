@@ -22,7 +22,7 @@ PlayerVec is an unsupervised representation learning system that compresses Worl
 ### Data pipeline
 
 - **Training:** StatsBomb open data + historical FBref World Cups (2014–2022)
-- **Inference:** Live 2026 FBref stats via `soccerdata` as the tournament runs
+- **Inference:** `soccerdata` integration available for live data; currently using offline sample mode
 - ~30 per-90 features: goals, xG, pressures, progressive passes, aerials, etc.
 
 ### Product decisions
